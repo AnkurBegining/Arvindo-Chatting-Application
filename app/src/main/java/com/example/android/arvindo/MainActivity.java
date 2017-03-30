@@ -7,6 +7,9 @@ import android.net.Uri;
 import android.provider.MediaStore;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.text.Editable;
+import android.text.InputFilter;
+import android.text.TextWatcher;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -45,20 +48,20 @@ public class MainActivity extends AppCompatActivity {
 
         mUserName = ANONYMOUS;
 
-        //Intilize Reference to view
+        //initialize Reference to view
         mMessageListView = (ListView) findViewById(R.id.list_item_view);
         mProgressBar = (ProgressBar) findViewById(R.id.progress_bar);
         mImageButton = (ImageButton) findViewById(R.id.photo_picker);
         mEditText = (EditText) findViewById(R.id.message_edit_text);
         mSendButton = (Button) findViewById(R.id.send_button);
 
-        //Intilize Message ListView and its adapter
+        //initialize Message ListView and its adapter
         List<MessageBody> message = new ArrayList<>();
 
         mAdapter = new MessageAdapter(this, R.layout.list_item, message);
         mMessageListView.setAdapter(mAdapter);
 
-        //Intilize ProgressBar
+        //initialize ProgressBar
         mProgressBar.setVisibility(ProgressBar.INVISIBLE);
 
         //ImagePicker button is used to upload Image
@@ -70,6 +73,33 @@ public class MainActivity extends AppCompatActivity {
 
             }
         });
+
+        //Enable send button when there is text to send
+        mEditText.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                if(s.toString().trim().length()>0){
+                    mSendButton.setEnabled(true);
+                }
+                else{
+                    mSendButton.setEnabled(false);
+                }
+
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+
+            }
+        });
+
+        mEditText.setFilters(new InputFilter[]{new InputFilter.LengthFilter(DEFAULT_MSG_LENGTH_LIMIT)});
+
+        
 
     }
 
