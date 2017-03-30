@@ -82,10 +82,9 @@ public class MainActivity extends AppCompatActivity {
 
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
-                if(s.toString().trim().length()>0){
+                if (s.toString().trim().length() > 0) {
                     mSendButton.setEnabled(true);
-                }
-                else{
+                } else {
                     mSendButton.setEnabled(false);
                 }
 
@@ -99,11 +98,18 @@ public class MainActivity extends AppCompatActivity {
 
         mEditText.setFilters(new InputFilter[]{new InputFilter.LengthFilter(DEFAULT_MSG_LENGTH_LIMIT)});
 
-        
+        //send Button send the messaage and clear the editText
 
+        mSendButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                //TODO: Send message on click
+
+                //clear the text
+                mEditText.setText("");
+            }
+        });
     }
-
-
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
