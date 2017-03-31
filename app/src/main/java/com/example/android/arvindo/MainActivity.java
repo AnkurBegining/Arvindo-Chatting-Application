@@ -23,6 +23,9 @@ import android.widget.ListView;
 import android.widget.ProgressBar;
 import android.widget.Toast;
 
+import com.google.firebase.database.ChildEventListener;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 
@@ -48,6 +51,10 @@ public class MainActivity extends AppCompatActivity {
     private FirebaseDatabase mFirebaseDatabase;
     //Use for database reference for message body
     private DatabaseReference mFirebaseDatabaseReference;
+
+    private ChildEventListener mChildEventListner;
+
+
 
 
     @Override
@@ -125,6 +132,36 @@ public class MainActivity extends AppCompatActivity {
                 Log.v("MainActivity = ","TEXT BOX CLEAR");
             }
         });
+
+        mChildEventListner = new ChildEventListener() {
+            @Override
+            public void onChildAdded(DataSnapshot dataSnapshot, String s) {
+                MessageBody currentMessageBody = dataSnapshot.getValue(MessageBody.class);
+                mAdapter.add(currentMessageBody);
+            }
+
+            @Override
+            public void onChildChanged(DataSnapshot dataSnapshot, String s) {
+
+            }
+
+            @Override
+            public void onChildRemoved(DataSnapshot dataSnapshot) {
+
+            }
+
+            @Override
+            public void onChildMoved(DataSnapshot dataSnapshot, String s) {
+
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        };
+        //Reference to find what exactly i am listening to.
+        mFirebaseDatabaseReference.addChildEventListener(mChildEventListner);
     }
 
     @Override
