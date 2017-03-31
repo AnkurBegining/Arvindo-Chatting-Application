@@ -5,6 +5,7 @@ import android.database.Cursor;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.provider.MediaStore;
+import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.text.Editable;
@@ -23,6 +24,8 @@ import android.widget.ListView;
 import android.widget.ProgressBar;
 import android.widget.Toast;
 
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.ChildEventListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -49,10 +52,18 @@ public class MainActivity extends AppCompatActivity {
     private String mUserName;
 
     private FirebaseDatabase mFirebaseDatabase;
+
     //Use for database reference for message body
     private DatabaseReference mFirebaseDatabaseReference;
 
+    //To read data on screen
     private ChildEventListener mChildEventListner;
+
+    //Authenticate
+    private FirebaseAuth mFireBaseAuth;
+    private FirebaseAuth.AuthStateListener mAuthStateListener;
+
+
 
 
 
@@ -66,6 +77,24 @@ public class MainActivity extends AppCompatActivity {
         mFirebaseDatabaseReference=mFirebaseDatabase.getReference().child("messages");
 
         mUserName = ANONYMOUS;
+
+        mFireBaseAuth =FirebaseAuth.getInstance();
+        mAuthStateListener =new FirebaseAuth.AuthStateListener() {
+            @Override
+            public void onAuthStateChanged(@NonNull FirebaseAuth firebaseAuth) {
+                FirebaseUser user=firebaseAuth.getCurrentUser();
+
+                if(user!=null){
+                    //User is signed in
+                    Toast.makeText(MainActivity.this,"User is signed in",Toast.LENGTH_LONG).show();
+                }
+                else{
+                    Toast.makeText(MainActivity.this,"User is logged out",Toast.LENGTH_LONG).show();
+                }
+
+
+            }
+        };
 
         //initialize Reference to view
         mMessageListView = (ListView) findViewById(R.id.list_item_view);
