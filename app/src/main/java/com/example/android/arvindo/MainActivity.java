@@ -78,31 +78,6 @@ public class MainActivity extends AppCompatActivity {
         mUserName = ANONYMOUS;
 
         mFireBaseAuth = FirebaseAuth.getInstance();
-        mAuthStateListener = new FirebaseAuth.AuthStateListener() {
-            @Override
-            public void onAuthStateChanged(@NonNull FirebaseAuth firebaseAuth) {
-                FirebaseUser user = firebaseAuth.getCurrentUser();
-
-                if (user != null) {
-                    //User is signed in
-                    Toast.makeText(MainActivity.this, "User is signed in", Toast.LENGTH_LONG).show();
-                } else {
-                    Toast.makeText(MainActivity.this, "User is logged out", Toast.LENGTH_LONG).show();
-
-                    startActivityForResult(
-                            AuthUI.getInstance()
-                                    .createSignInIntentBuilder()
-                                    .setIsSmartLockEnabled(false)
-                                    .setProviders(
-                                            AuthUI.EMAIL_PROVIDER,
-                                            AuthUI.GOOGLE_PROVIDER)
-                                    .build(),
-                            +RC_SIGN_IN);
-                }
-
-
-            }
-        };
 
         //initialize Reference to view
         mMessageListView = (ListView) findViewById(R.id.list_item_view);
@@ -170,6 +145,43 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+
+        mAuthStateListener = new FirebaseAuth.AuthStateListener() {
+            @Override
+            public void onAuthStateChanged(@NonNull FirebaseAuth firebaseAuth) {
+                FirebaseUser user = firebaseAuth.getCurrentUser();
+
+                if (user != null) {
+                    //User is signed in
+                    Toast.makeText(MainActivity.this, "User is signed in", Toast.LENGTH_LONG).show();
+                    onSignedIntialized(user.getDisplayName());
+                } else {
+                    Toast.makeText(MainActivity.this, "User is logged out", Toast.LENGTH_LONG).show();
+                    onSignedOutCleanUp();
+                    startActivityForResult(
+                            AuthUI.getInstance()
+                                    .createSignInIntentBuilder()
+                                    .setIsSmartLockEnabled(false)
+                                    .setProviders(
+                                            AuthUI.EMAIL_PROVIDER,
+                                            AuthUI.GOOGLE_PROVIDER)
+                                    .build(),
+                            +RC_SIGN_IN);
+                }
+
+
+            }
+        };
+
+    }
+
+    private void onSignedIntialized(String userName) {
+        mUserName =userName;
+        attachedDataBaseReadListner();
+
+    }
+
+    private void attachedDataBaseReadListner() {
         mChildEventListner = new ChildEventListener() {
             @Override
             public void onChildAdded(DataSnapshot dataSnapshot, String s) {
@@ -199,6 +211,10 @@ public class MainActivity extends AppCompatActivity {
         };
         //Reference to find what exactly i am listening to.
         mFirebaseDatabaseReference.addChildEventListener(mChildEventListner);
+    }
+
+    private void onSignedOutCleanUp(){
+
     }
 
     @Override
