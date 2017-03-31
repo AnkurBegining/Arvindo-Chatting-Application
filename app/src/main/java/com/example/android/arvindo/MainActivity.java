@@ -24,6 +24,7 @@ import android.widget.ListView;
 import android.widget.ProgressBar;
 import android.widget.Toast;
 
+import com.firebase.ui.auth.AuthUI;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.ChildEventListener;
@@ -39,6 +40,8 @@ public class MainActivity extends AppCompatActivity {
 
     public static final String ANONYMOUS = "anonymous";
     public static final int DEFAULT_MSG_LENGTH_LIMIT = 1000;
+
+    public static final int RC_SIGN_IN = 1;
 
     private static int RESULT_LOAD_IMAGE = 1;
 
@@ -64,32 +67,37 @@ public class MainActivity extends AppCompatActivity {
     private FirebaseAuth.AuthStateListener mAuthStateListener;
 
 
-
-
-
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
         mFirebaseDatabase = FirebaseDatabase.getInstance();
-        mFirebaseDatabaseReference=mFirebaseDatabase.getReference().child("messages");
+        mFirebaseDatabaseReference = mFirebaseDatabase.getReference().child("messages");
 
         mUserName = ANONYMOUS;
 
-        mFireBaseAuth =FirebaseAuth.getInstance();
-        mAuthStateListener =new FirebaseAuth.AuthStateListener() {
+        mFireBaseAuth = FirebaseAuth.getInstance();
+        mAuthStateListener = new FirebaseAuth.AuthStateListener() {
             @Override
             public void onAuthStateChanged(@NonNull FirebaseAuth firebaseAuth) {
-                FirebaseUser user=firebaseAuth.getCurrentUser();
+                FirebaseUser user = firebaseAuth.getCurrentUser();
 
-                if(user!=null){
+                if (user != null) {
                     //User is signed in
-                    Toast.makeText(MainActivity.this,"User is signed in",Toast.LENGTH_LONG).show();
-                }
-                else{
-                    Toast.makeText(MainActivity.this,"User is logged out",Toast.LENGTH_LONG).show();
+                    Toast.makeText(MainActivity.this, "User is signed in", Toast.LENGTH_LONG).show();
+                } else {
+                    Toast.makeText(MainActivity.this, "User is logged out", Toast.LENGTH_LONG).show();
+
+                    startActivityForResult(
+                            AuthUI.getInstance()
+                                    .createSignInIntentBuilder()
+                                    .setIsSmartLockEnabled(false)
+                                    .setProviders(
+                                            AuthUI.EMAIL_PROVIDER,
+                                            AuthUI.GOOGLE_PROVIDER)
+                                    .build(),
+                            +RC_SIGN_IN);
                 }
 
 
@@ -152,13 +160,13 @@ public class MainActivity extends AppCompatActivity {
             public void onClick(View v) {
                 //TODO: Send message on click
 
-                MessageBody currentMessageBody =new MessageBody(mEditText.getText().toString(), mUserName,null);
+                MessageBody currentMessageBody = new MessageBody(mEditText.getText().toString(), mUserName, null);
 
                 mFirebaseDatabaseReference.push().setValue(currentMessageBody);
 
                 //clear the text
                 mEditText.setText("");
-                Log.v("MainActivity = ","TEXT BOX CLEAR");
+                Log.v("MainActivity = ", "TEXT BOX CLEAR");
             }
         });
 
@@ -203,5 +211,17 @@ public class MainActivity extends AppCompatActivity {
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        mFireBaseAuth.removeAuthStateListener(mAuthStateListener);
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        mFireBaseAuth.addAuthStateListener(mAuthStateListener);
     }
 }
