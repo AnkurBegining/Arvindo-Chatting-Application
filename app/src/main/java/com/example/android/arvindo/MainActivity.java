@@ -182,39 +182,51 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void attachedDataBaseReadListner() {
-        mChildEventListner = new ChildEventListener() {
-            @Override
-            public void onChildAdded(DataSnapshot dataSnapshot, String s) {
-                MessageBody currentMessageBody = dataSnapshot.getValue(MessageBody.class);
-                mAdapter.add(currentMessageBody);
-            }
+        if (mChildEventListner == null) {
+            mChildEventListner = new ChildEventListener() {
+                @Override
+                public void onChildAdded(DataSnapshot dataSnapshot, String s) {
+                    MessageBody currentMessageBody = dataSnapshot.getValue(MessageBody.class);
+                    mAdapter.add(currentMessageBody);
+                }
 
-            @Override
-            public void onChildChanged(DataSnapshot dataSnapshot, String s) {
+                @Override
+                public void onChildChanged(DataSnapshot dataSnapshot, String s) {
 
-            }
+                }
 
-            @Override
-            public void onChildRemoved(DataSnapshot dataSnapshot) {
+                @Override
+                public void onChildRemoved(DataSnapshot dataSnapshot) {
 
-            }
+                }
 
-            @Override
-            public void onChildMoved(DataSnapshot dataSnapshot, String s) {
+                @Override
+                public void onChildMoved(DataSnapshot dataSnapshot, String s) {
 
-            }
+                }
 
-            @Override
-            public void onCancelled(DatabaseError databaseError) {
+                @Override
+                public void onCancelled(DatabaseError databaseError) {
 
-            }
-        };
-        //Reference to find what exactly i am listening to.
-        mFirebaseDatabaseReference.addChildEventListener(mChildEventListner);
+                }
+            };
+            //Reference to find what exactly i am listening to.
+            mFirebaseDatabaseReference.addChildEventListener(mChildEventListner);
+        }
     }
 
     private void onSignedOutCleanUp(){
+        mUserName = ANONYMOUS;
+        mAdapter.clear();
+        detachDateBaseListner();
 
+    }
+
+    private void detachDateBaseListner() {
+        if (mChildEventListner != null) {
+            mFirebaseDatabaseReference.removeEventListener(mChildEventListner);
+            mChildEventListner =null;
+        }
     }
 
     @Override
@@ -230,14 +242,15 @@ public class MainActivity extends AppCompatActivity {
     }
 
     @Override
-    protected void onPause() {
-        super.onPause();
-        mFireBaseAuth.removeAuthStateListener(mAuthStateListener);
-    }
-
-    @Override
     protected void onResume() {
         super.onResume();
         mFireBaseAuth.addAuthStateListener(mAuthStateListener);
+    }
+    @Override
+    protected void onPause() {
+        super.onPause();
+        mFireBaseAuth.removeAuthStateListener(mAuthStateListener);
+        detachDateBaseListner();
+        mAdapter.clear();
     }
 }
