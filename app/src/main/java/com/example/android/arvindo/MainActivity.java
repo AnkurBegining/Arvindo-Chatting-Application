@@ -10,6 +10,7 @@ import android.os.Bundle;
 import android.text.Editable;
 import android.text.InputFilter;
 import android.text.TextWatcher;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -20,6 +21,10 @@ import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.ProgressBar;
+import android.widget.Toast;
+
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -40,11 +45,18 @@ public class MainActivity extends AppCompatActivity {
 
     private String mUserName;
 
+    private FirebaseDatabase mFirebaseDatabase;
+    //Use for database reference for message body
+    private DatabaseReference mFirebaseDatabaseReference;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        mFirebaseDatabase = FirebaseDatabase.getInstance();
+        mFirebaseDatabaseReference=mFirebaseDatabase.getReference().child("messages");
 
         mUserName = ANONYMOUS;
 
@@ -57,7 +69,6 @@ public class MainActivity extends AppCompatActivity {
 
         //initialize Message ListView and its adapter
         List<MessageBody> message = new ArrayList<>();
-
         mAdapter = new MessageAdapter(this, R.layout.list_item, message);
         mMessageListView.setAdapter(mAdapter);
 
@@ -105,8 +116,13 @@ public class MainActivity extends AppCompatActivity {
             public void onClick(View v) {
                 //TODO: Send message on click
 
+                MessageBody currentMessageBody =new MessageBody(mEditText.getText().toString(), mUserName,null);
+
+                mFirebaseDatabaseReference.push().setValue(currentMessageBody);
+
                 //clear the text
                 mEditText.setText("");
+                Log.v("MainActivity = ","TEXT BOX CLEAR");
             }
         });
     }

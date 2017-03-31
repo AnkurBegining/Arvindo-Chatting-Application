@@ -14,7 +14,7 @@ public class MessageBody {
 
     }
 
-    public MessageBody(String name, String text, String photoUrl){
+    public MessageBody(String text, String name, String photoUrl){
         this.name=name;
         this.text=text;
         this.photoUrl=photoUrl;
