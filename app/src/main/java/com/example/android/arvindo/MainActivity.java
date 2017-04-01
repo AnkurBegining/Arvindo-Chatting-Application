@@ -43,7 +43,7 @@ public class MainActivity extends AppCompatActivity {
 
     public static final int RC_SIGN_IN = 1;
 
-    private static int RESULT_LOAD_IMAGE = 1;
+    private static int RC_PHOTO_PICKER = 1;
 
     private ListView mMessageListView;
     private MessageAdapter mAdapter;
@@ -54,14 +54,12 @@ public class MainActivity extends AppCompatActivity {
 
     private String mUserName;
 
+    //All Firebase Declaration
     private FirebaseDatabase mFirebaseDatabase;
-
     //Use for database reference for message body
     private DatabaseReference mFirebaseDatabaseReference;
-
     //To read data on screen
     private ChildEventListener mChildEventListner;
-
     //Authenticate
     private FirebaseAuth mFireBaseAuth;
     private FirebaseAuth.AuthStateListener mAuthStateListener;
@@ -98,7 +96,10 @@ public class MainActivity extends AppCompatActivity {
         mImageButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                //Todo: We need to Intent here.
+                Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
+                intent.setType("image/jpeg");
+                intent.putExtra(Intent.EXTRA_LOCAL_ONLY, true);
+                startActivityForResult(Intent.createChooser(intent, "Complete action using"), RC_PHOTO_PICKER);
 
 
             }
@@ -176,7 +177,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void onSignedIntialized(String userName) {
-        mUserName =userName;
+        mUserName = userName;
         attachedDataBaseReadListner();
 
     }
@@ -215,7 +216,7 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    private void onSignedOutCleanUp(){
+    private void onSignedOutCleanUp() {
         mUserName = ANONYMOUS;
         mAdapter.clear();
         detachDateBaseListner();
@@ -225,7 +226,7 @@ public class MainActivity extends AppCompatActivity {
     private void detachDateBaseListner() {
         if (mChildEventListner != null) {
             mFirebaseDatabaseReference.removeEventListener(mChildEventListner);
-            mChildEventListner =null;
+            mChildEventListner = null;
         }
     }
 
@@ -238,7 +239,30 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        return super.onOptionsItemSelected(item);
+        switch (item.getItemId()){
+            case R.id.sign_out:
+                AuthUI.getInstance().signOut(this);
+                return true;
+            default:
+                return super.onOptionsItemSelected(item);
+        }
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+
+        if (requestCode == RC_SIGN_IN) {
+            if (resultCode == RESULT_OK) {
+                Toast.makeText(MainActivity.this, "User successfully logged in", Toast.LENGTH_SHORT).show();
+            } else if (resultCode == RESULT_CANCELED) {
+                Toast.makeText(MainActivity.this, "User could not signed properly", Toast.LENGTH_SHORT).show();
+                finish();
+            }
+        }
+
+
+
+        super.onActivityResult(requestCode, resultCode, data);
     }
 
     @Override
@@ -246,6 +270,7 @@ public class MainActivity extends AppCompatActivity {
         super.onResume();
         mFireBaseAuth.addAuthStateListener(mAuthStateListener);
     }
+
     @Override
     protected void onPause() {
         super.onPause();
