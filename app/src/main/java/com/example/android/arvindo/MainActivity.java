@@ -25,6 +25,7 @@ import android.widget.ProgressBar;
 import android.widget.Toast;
 
 import com.firebase.ui.auth.AuthUI;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.ChildEventListener;
@@ -32,6 +33,9 @@ import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
+import com.google.firebase.storage.UploadTask;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -43,7 +47,7 @@ public class MainActivity extends AppCompatActivity {
 
     public static final int RC_SIGN_IN = 1;
 
-    private static int RC_PHOTO_PICKER = 1;
+    private static int RC_PHOTO_PICKER = 2;
 
     private ListView mMessageListView;
     private MessageAdapter mAdapter;
@@ -64,6 +68,9 @@ public class MainActivity extends AppCompatActivity {
     private FirebaseAuth mFireBaseAuth;
     private FirebaseAuth.AuthStateListener mAuthStateListener;
 
+    private FirebaseStorage mFirebaseStorage;
+    private StorageReference mFirebaseStorageReference;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -76,6 +83,8 @@ public class MainActivity extends AppCompatActivity {
         mUserName = ANONYMOUS;
 
         mFireBaseAuth = FirebaseAuth.getInstance();
+        mFirebaseStorage=FirebaseStorage.getInstance();
+        mFirebaseStorageReference = mFirebaseStorage.getReference().child("photo_chat");
 
         //initialize Reference to view
         mMessageListView = (ListView) findViewById(R.id.list_item_view);
@@ -259,10 +268,23 @@ public class MainActivity extends AppCompatActivity {
                 finish();
             }
         }
+        else if (requestCode == RC_PHOTO_PICKER && resultCode == RESULT_OK){
+            Uri selectedImageUri = data.getData();
+            mFirebaseStorageReference.putFile(selectedImageUri).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
+                @Override
+                public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+                    Uri downloadUrl = taskSnapshot.getDownloadUrl();
+                    MessageBody currentMessageBody = new MessageBody(null,mUserName,downloadUrl.toString());
+                    mFirebaseDatabaseReference.push().setValue(currentMessageBody);
+
+                }
+            });
+
+        }
 
 
 
-        super.onActivityResult(requestCode, resultCode, data);
+       
     }
 
     @Override
